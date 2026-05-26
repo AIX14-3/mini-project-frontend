@@ -22,6 +22,13 @@ import { deferEffect } from '@/lib/react/deferEffect';
 
 const FIREWORKS_KEY = 'chungsora-log-fireworks-seen';
 
+function getScoreGrade(score: number): { grade: string; color: string } {
+  if (score >= 90) return { grade: 'S', color: '#d4a017' }; // 금색
+  if (score >= 80) return { grade: 'A', color: '#1a6fdb' }; // 파란색
+  if (score >= 70) return { grade: 'B', color: '#2a9d5c' }; // 초록색
+  return { grade: 'C', color: '#828c94' };                   // 회색
+}
+
 type CleaningLogViewProps = {
   role?: ChungsoraRole;
   showBack?: boolean;
@@ -155,16 +162,21 @@ export function CleaningLogView({ role: roleProp, showBack, dateParam }: Cleanin
     }
   };
 
-  const scoreLine = `AI ${score}점 · ${baseCleanWon.toLocaleString()}원×${score}%×${payout.mult} = +${payout.finalP}P`;
+  const gradeInfo = getScoreGrade(score);
+  const scoreDetail = `${baseCleanWon.toLocaleString()}원×${score}%×${payout.mult} = +${payout.finalP}P`;
 
   return (
     <div className="flex min-h-[calc(100dvh-7rem)] flex-col">
       {showFireworks && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
+          onClick={() => setShowFireworks(false)}
+        >
           <div className="rounded-2xl bg-white px-6 py-8 text-center shadow-lg">
             <p className="text-4xl">🎉</p>
             <p className="mt-3 text-lg font-bold text-[#2f3438]">첫 청소 로그!</p>
             <p className="mt-1 text-sm text-[#828c94]">엄마·아빠와 대화를 나눠보세요</p>
+            <p className="mt-3 text-xs text-[#828c94]">탭하면 닫혀요</p>
           </div>
         </div>
       )}
@@ -183,7 +195,16 @@ export function CleaningLogView({ role: roleProp, showBack, dateParam }: Cleanin
               스트릭 {streakDays}일
             </span>
           </div>
-          <p className="mb-3 text-xs text-[#828c94]">{scoreLine}</p>
+          <div className="mb-3 flex items-center gap-1.5">
+            <span className="text-xs text-[#828c94]">AI {score}점</span>
+            <span
+              className="rounded px-1.5 py-0.5 text-[11px] font-bold text-white"
+              style={{ backgroundColor: gradeInfo.color }}
+            >
+              {gradeInfo.grade}
+            </span>
+            <span className="text-xs text-[#828c94]">· {scoreDetail}</span>
+          </div>
 
           <LogPhotoPair beforeUrl={beforeUrl} afterUrl={afterUrl} />
 

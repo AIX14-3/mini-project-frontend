@@ -29,7 +29,6 @@ export function stopCoachSpeech(): void {
   const syn = window.speechSynthesis;
   syn.pause();
   syn.cancel();
-  // iOS/Android: 큐에 남은 발화 제거
   for (let i = 0; i < 8 && (syn.speaking || syn.pending); i += 1) {
     syn.cancel();
   }
@@ -45,8 +44,7 @@ function utterance(text: string, rate = DEFAULT_RATE): SpeechSynthesisUtterance 
   return u;
 }
 
-/** iOS Safari: voices 목록·재생 깨우기 */
-function primeSpeechSynthesis(): void {
+export function primeSpeechSynthesis(): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
   window.speechSynthesis.getVoices();
   const u = new SpeechSynthesisUtterance('');
@@ -56,11 +54,6 @@ function primeSpeechSynthesis(): void {
   window.speechSynthesis.cancel();
 }
 
-/**
- * Web Speech API 기반 코치 TTS + 자막.
- * - cancel 후 짧은 지연으로 겹침·iOS 끊김 완화
- * - 연속 호출은 마지막 문장만 재생
- */
 export function useCoachSpeech(enabled: boolean) {
   const [subtitle, setSubtitle] = useState('');
   const enabledRef = useRef(enabled);

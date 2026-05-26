@@ -8,6 +8,7 @@ import { MissionStepper } from '@/components/chungsora/MissionStepper';
 import { earnPoints } from '@/lib/chungsora/clientApi';
 import { useCleaningSessionStore } from '@/lib/chungsora/cleaningSessionStore';
 import { useSettingsStore } from '@/lib/chungsora/settingsStore';
+import { postToNative } from '@/lib/chungsora/nativeBridge';
 import { calcCleaningPayout } from '@/lib/chungsora/tokens';
 
 export default function ChildUnlockPage() {
@@ -15,7 +16,6 @@ export default function ChildUnlockPage() {
   const cleanliness = useCleaningSessionStore((s) => s.cleanliness);
   const verifyComment = useCleaningSessionStore((s) => s.verifyComment);
   const streakDays = useCleaningSessionStore((s) => s.streakDays);
-  const resetSession = useCleaningSessionStore((s) => s.resetSession);
   const baseCleanWon = useSettingsStore((s) => s.baseCleanWon);
   const passScore = useSettingsStore((s) => s.passScore);
 
@@ -24,18 +24,18 @@ export default function ChildUnlockPage() {
   const payout = calcCleaningPayout(baseCleanWon, score || 0, streakDays);
 
   useEffect(() => {
-    if (cleanliness <= 0) {
+    if (cleanliness <= 0 && !verifyComment) {
       router.replace('/child/mission/after');
     }
-  }, [cleanliness, router]);
+  }, [cleanliness, router, verifyComment]);
 
   useEffect(() => {
     if (!passed) return;
     void earnPoints(payout.finalP, `청소 완료 · AI ${score}점`).catch(() => undefined);
+    postToNative('unlock');
   }, [passed, payout.finalP, score]);
 
   const goHome = () => {
-    resetSession();
     router.push('/child/home');
   };
 
